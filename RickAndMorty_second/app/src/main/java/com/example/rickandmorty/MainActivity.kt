@@ -2,23 +2,26 @@ package com.example.rickandmorty
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
-    private val cellClickListener: (Character) -> Unit = { data ->
+    private val cellClickListener: (RecyclerItem.CharacterItem) -> Unit = { data ->
         onCellClickListener(data)
     }
-    private var charAdapter = CharAdapter(cellClickListener)
+    private val buttonClickListener: (RecyclerItem.ButtonItem) -> Unit = { data ->
+        onButtonClickListener(data)
+    }
+    private var charAdapter = CharAdapter(cellClickListener, buttonClickListener)
+    private var model: CharPageViewModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val model: CharPageViewModel by viewModels()
-        model.getCharData().observe(this) { charData ->
+        model = CharPageViewModel()
+        model!!.getCharData().observe(this) { charData ->
             charAdapter.submitList(charData)
         }
 
@@ -28,9 +31,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun onCellClickListener(data: Character) {
+    private fun onCellClickListener(data: RecyclerItem.CharacterItem) {
         intent = Intent(this, CharacterPage::class.java)
         intent.putExtra("charData", data)
         startActivity(intent)
+    }
+
+    private fun onButtonClickListener(data: RecyclerItem.ButtonItem) {
+        model!!.uploadPage(data.next)
     }
 }
